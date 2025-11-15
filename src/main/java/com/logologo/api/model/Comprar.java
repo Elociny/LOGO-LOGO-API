@@ -47,6 +47,10 @@ public class Comprar {
     @Column(nullable = false)
     private FormaPagamento formaPagamento;
 
+    @ManyToOne
+    @JoinColumn(name = "cartao_id")
+    private Cartao cartao;
+
     public void calcularValorTotal() {
         if (produtos != null && !produtos.isEmpty()) {
             this.valorTotal = produtos.stream()

@@ -1,5 +1,7 @@
 package com.logologo.api.controller;
 
+import com.logologo.api.dto.ComprarRequestDTO;
+import com.logologo.api.dto.ComprarResponseDTO;
 import com.logologo.api.model.Comprar;
 import com.logologo.api.service.ComprarService;
 import lombok.RequiredArgsConstructor;
@@ -16,18 +18,18 @@ public class ComprarController {
     private final ComprarService comprarService;
 
     @GetMapping
-    public ResponseEntity<List<Comprar>> listar() {
+    public ResponseEntity<List<ComprarResponseDTO>> listar() {
         return ResponseEntity.ok(comprarService.listarTodos());
     }
 
-    @PostMapping
-    public ResponseEntity<Comprar> salvar(@RequestBody Comprar compra) {
-        return ResponseEntity.ok(comprarService.salvar(compra));
+    @GetMapping("/{id}")
+    public ResponseEntity<ComprarResponseDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(comprarService.buscarPorId(id));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Comprar> buscarPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(comprarService.buscarPorId(id));
+    @PostMapping
+    public ResponseEntity<ComprarResponseDTO> salvar(@RequestBody ComprarRequestDTO dto) {
+        return ResponseEntity.ok(comprarService.salvar(dto));
     }
 
     @DeleteMapping("/{id}")
