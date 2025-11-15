@@ -1,5 +1,6 @@
 package com.logologo.api.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -21,6 +22,7 @@ public class Comprar {
     @NotNull(message = "O cliente é obrigatório")
     @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = false)
+    @JsonBackReference
     private Cliente cliente;
 
     @NotNull(message = "Os produtos são obrigatórios")

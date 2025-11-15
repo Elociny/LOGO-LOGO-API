@@ -86,12 +86,26 @@ public class ClienteService {
                                 cliente.getId()
                         )).toList();
 
+        List<ComprarResponseDTO> compras = cliente.getCompras() == null ? List.of() :
+                cliente.getCompras().stream()
+                        .map(comprar -> new ComprarResponseDTO(
+                                comprar.getId(),
+                                cliente.getId(),
+                                comprar.getProdutos().stream().map(produto -> produto.getId()).toList(),
+                                comprar.getDataCompra(),
+                                comprar.getValorTotal(),
+                                comprar.getStatus(),
+                                comprar.getFormaPagamento(),
+                                comprar.getCartao() != null ? comprar.getCartao().getId() : null
+                        )).toList();
+
         return new ClienteResponseDTO(
                 cliente.getId(),
                 cliente.getNome(),
                 cliente.getEmail(),
                 enderecos,
-                cartoes
+                cartoes,
+                compras
         );
     }
 }

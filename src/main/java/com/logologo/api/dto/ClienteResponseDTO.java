@@ -20,5 +20,7 @@ public record ClienteResponseDTO(
 
         List<EnderecoDTO> endercos,
 
-        List<CartaoResponseDTO> cartoes
+        List<CartaoResponseDTO> cartoes,
+
+        List<ComprarResponseDTO> compras
 ) {}
