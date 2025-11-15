@@ -1,5 +1,7 @@
 package com.logologo.api.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -29,6 +31,7 @@ public class Cartao {
     private String validade;
 
     @NotBlank(message = "CVV é obrigatório")
+    @JsonIgnore
     private String cvv;
 
     @Enumerated(EnumType.STRING)
@@ -36,9 +39,10 @@ public class Cartao {
     private TipoCartao tipo; 
 
     @Column(nullable = false)
-    private String bandeira; 
+    private BandeiraCartao bandeira;
 
     @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = false)
+    @JsonBackReference
     private Cliente cliente;
 }

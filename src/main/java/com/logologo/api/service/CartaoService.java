@@ -6,6 +6,7 @@ import com.logologo.api.model.Cartao;
 import com.logologo.api.model.Cliente;
 import com.logologo.api.repository.CartaoRepository;
 import com.logologo.api.repository.ClienteRepository;
+import com.logologo.api.utils.CartaoUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -68,17 +69,21 @@ public class CartaoService {
     }
 
     public void excluir(Long id) {
+        if (!cartaoRepository.existsById(id)) {
+            throw new RuntimeException("Cartão não existe!");
+        }
+
         cartaoRepository.deleteById(id);
     }
 
     private CartaoResponseDTO toResponseDTO(Cartao cartao) {
         return new CartaoResponseDTO(
                 cartao.getId(),
-                cartao.getNumero(),
+                CartaoUtils.mascararNumero(cartao.getNumero()),
                 cartao.getNomeTitular(),
                 cartao.getValidade(),
                 cartao.getTipo(),
-                cartao.getBandeira(),
+                cartao.getBandeira().name(),
                 cartao.getCliente().getId()
         );
     }

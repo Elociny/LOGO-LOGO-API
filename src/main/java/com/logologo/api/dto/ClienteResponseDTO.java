@@ -18,5 +18,7 @@ public record ClienteResponseDTO(
         @Email(message = "Email deve ser válido")
         String email,
 
-        List<EnderecoDTO> endercos
+        List<EnderecoDTO> endercos,
+
+        List<CartaoResponseDTO> cartoes
 ) {}

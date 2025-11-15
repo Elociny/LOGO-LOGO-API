@@ -1,10 +1,10 @@
 package com.logologo.api.service;
 
-import com.logologo.api.dto.ClienteRequestDTO;
-import com.logologo.api.dto.ClienteResponseDTO;
-import com.logologo.api.dto.EnderecoDTO;
+import com.logologo.api.dto.*;
+import com.logologo.api.model.Cartao;
 import com.logologo.api.model.Cliente;
 import com.logologo.api.repository.ClienteRepository;
+import com.logologo.api.utils.CartaoUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -74,11 +74,24 @@ public class ClienteService {
                         e.getCliente().getId()
                 )).toList();
 
+        List<CartaoResponseDTO> cartoes = cliente.getCartoes() == null ? List.of() :
+                cliente.getCartoes().stream()
+                        .map(c -> new CartaoResponseDTO(
+                                c.getId(),
+                                CartaoUtils.mascararNumero(c.getNumero()),
+                                c.getNomeTitular(),
+                                c.getValidade(),
+                                c.getTipo(),
+                                c.getBandeira().name(),
+                                cliente.getId()
+                        )).toList();
+
         return new ClienteResponseDTO(
                 cliente.getId(),
                 cliente.getNome(),
                 cliente.getEmail(),
-                enderecos
+                enderecos,
+                cartoes
         );
     }
 }
