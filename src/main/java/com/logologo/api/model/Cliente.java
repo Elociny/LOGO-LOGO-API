@@ -44,4 +44,8 @@ public class Cliente {
     @JsonManagedReference
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comprar> compras;
+
+    @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "carrinho_id", nullable = false)
+    private Carrinho carrinho;
 }

@@ -22,5 +22,7 @@ public record ClienteResponseDTO(
 
         List<CartaoResponseDTO> cartoes,
 
-        List<ComprarResponseDTO> compras
+        List<ComprarResponseDTO> compras,
+
+        CarrinhoResponseDTO carrinho
 ) {}

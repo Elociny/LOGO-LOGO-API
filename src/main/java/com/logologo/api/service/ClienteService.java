@@ -1,6 +1,7 @@
 package com.logologo.api.service;
 
 import com.logologo.api.dto.*;
+import com.logologo.api.model.Carrinho;
 import com.logologo.api.model.Cartao;
 import com.logologo.api.model.Cliente;
 import com.logologo.api.repository.ClienteRepository;
@@ -38,6 +39,10 @@ public class ClienteService {
         cliente.setEmail(dto.email());
         cliente.setSenha(dto.senha());
 
+        Carrinho carrinho = new Carrinho();
+        carrinho.setCliente(cliente);
+        cliente.setCarrinho(carrinho);
+
         repository.save(cliente);
         return toResponseDTO(cliente);
     }
@@ -58,6 +63,25 @@ public class ClienteService {
 
     public void excluir(Long id) {
         repository.deleteById(id);
+    }
+
+    private CarrinhoResponseDTO toCarrinhoDTO(Carrinho carrinho) {
+        if (carrinho == null) return null;
+
+        List<CarrinhoItemDTO> itens = carrinho.getItens() == null ? List.of() :
+                carrinho.getItens().stream()
+                        .map(item -> new CarrinhoItemDTO(
+                                item.getId(),
+                                item.getProduto().getId(),
+                                item.getProduto().getNome(),
+                                item.getQuantidade()
+                        )).toList();
+
+        return new CarrinhoResponseDTO(
+                carrinho.getId(),
+                carrinho.getCliente().getId(),
+                itens
+        );
     }
 
     private ClienteResponseDTO toResponseDTO(Cliente cliente) {
@@ -105,7 +129,8 @@ public class ClienteService {
                 cliente.getEmail(),
                 enderecos,
                 cartoes,
-                compras
+                compras,
+                toCarrinhoDTO(cliente.getCarrinho())
         );
     }
 }
