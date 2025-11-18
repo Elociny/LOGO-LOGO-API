@@ -25,7 +25,7 @@ public class DataLoader {
                         .cor("Branca")
                         .tamanho("M")
                         .categoria(Categoria.FEMININO)
-                        .imageUrl("https://exemplo.com/imagens/camiseta-feminina.jpg")
+                        .imageUrl("https://acdn-us.mitiendanube.com/stores/001/286/352/products/camiseta-oversized-feminina-estampada-1-aa6f110f46bcebbc9517207170027695-640-0.webp")
                         .build());
 
                 repository.save(Produto.builder()
@@ -37,7 +37,7 @@ public class DataLoader {
                         .cor("Azul escuro")
                         .tamanho("42")
                         .categoria(Categoria.MASCULINO)
-                        .imageUrl("https://exemplo.com/imagens/calca-jeans.jpg")
+                        .imageUrl("https://lojaviego.com.br/cdn/shop/files/Calca_Jeans_Masculina_Preta_Com_Elastano_Viego_1.jpg?v=1732901482")
                         .build());
 
                 repository.save(Produto.builder()
@@ -49,7 +49,7 @@ public class DataLoader {
                         .cor("Preto")
                         .tamanho("39")
                         .categoria(Categoria.CALCADOS)
-                        .imageUrl("https://exemplo.com/imagens/tenis-unissex.jpg")
+                        .imageUrl("https://grupooscar.vteximg.com.br/arquivos/ids/2409147/17509733747780.jpg")
                         .build());
 
                 repository.save(Produto.builder()
@@ -61,7 +61,7 @@ public class DataLoader {
                         .cor("Marrom")
                         .tamanho("Único")
                         .categoria(Categoria.ACESSORIOS)
-                        .imageUrl("https://exemplo.com/imagens/bolsa-feminina.jpg")
+                        .imageUrl("https://newsunset.com.br/cdn/shop/products/Hc10c025a24754b1695401fdc82e2602cy_800x.jpg?v=1628829412")
                         .build());
 
                 System.out.println("✅ Produtos inseridos com sucesso!");
