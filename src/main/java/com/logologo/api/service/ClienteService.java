@@ -7,6 +7,7 @@ import com.logologo.api.model.Cliente;
 import com.logologo.api.repository.ClienteRepository;
 import com.logologo.api.utils.CartaoUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 
@@ -44,6 +45,13 @@ public class ClienteService {
         cliente.setCarrinho(carrinho);
 
         repository.save(cliente);
+        return toResponseDTO(cliente);
+    }
+
+    public ClienteResponseDTO login(String email, String senha) {
+        Cliente cliente = repository.findByEmailAndSenha(email, senha)
+                .orElseThrow(() -> new RuntimeException("Email ou senha invalidos"));
+
         return toResponseDTO(cliente);
     }
 

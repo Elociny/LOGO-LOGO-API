@@ -2,6 +2,7 @@ package com.logologo.api.controller;
 
 import com.logologo.api.dto.ClienteRequestDTO;
 import com.logologo.api.dto.ClienteResponseDTO;
+import com.logologo.api.dto.LoginDTO;
 import com.logologo.api.model.Cliente;
 import com.logologo.api.service.ClienteService;
 import jakarta.validation.Valid;
@@ -31,9 +32,16 @@ public class ClienteController {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
-    @PostMapping
+    @PostMapping("/cadastrar")
     public ResponseEntity<ClienteResponseDTO> cadastrar(@RequestBody @Valid ClienteRequestDTO dto) {
         return ResponseEntity.ok(service.cadastrar(dto));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ClienteResponseDTO> login(@RequestBody LoginDTO dados) {
+        ClienteResponseDTO cliente = service.login(dados.email(), dados.senha());
+
+        return ResponseEntity.ok(cliente);
     }
 
     @PutMapping("/{id}")

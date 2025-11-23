@@ -11,7 +11,6 @@ import com.logologo.api.repository.CarrinhoItemRepository;
 import com.logologo.api.repository.CarrinhoRepository;
 import com.logologo.api.repository.ClienteRepository;
 import com.logologo.api.repository.ProdutoRepository;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

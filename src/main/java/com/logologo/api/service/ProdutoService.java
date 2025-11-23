@@ -24,6 +24,10 @@ public class ProdutoService {
         return repository.findByNomeContainingIgnoreCase(nome).stream().map(this::toDTO).toList();
     }
 
+    public ProdutoDTO buscarPorId(Long id) {
+        return repository.findById(id).map(this::toDTO).orElseThrow(null);
+    }
+
     private ProdutoDTO toDTO(Produto produto) {
         return new ProdutoDTO(
                 produto.getId(),
