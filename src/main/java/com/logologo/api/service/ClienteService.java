@@ -7,6 +7,7 @@ import com.logologo.api.model.Cliente;
 import com.logologo.api.repository.ClienteRepository;
 import com.logologo.api.utils.CartaoUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
@@ -67,6 +68,14 @@ public class ClienteService {
 
         repository.save(cliente);
         return toResponseDTO(cliente);
+    }
+
+    @Transactional
+    public void alteraSenha(String email, String novaSenha) {
+        Cliente cliente = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+
+        cliente.setSenha(novaSenha);
     }
 
     public void excluir(Long id) {

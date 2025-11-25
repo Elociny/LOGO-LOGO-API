@@ -1,9 +1,9 @@
 package com.logologo.api.controller;
 
+import com.logologo.api.dto.AlterarSenhaClienteDTO;
 import com.logologo.api.dto.ClienteRequestDTO;
 import com.logologo.api.dto.ClienteResponseDTO;
 import com.logologo.api.dto.LoginDTO;
-import com.logologo.api.model.Cliente;
 import com.logologo.api.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +47,17 @@ public class ClienteController {
     @PutMapping("/{id}")
     public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ClienteRequestDTO dto) {
         return ResponseEntity.ok(service.atualizar(id, dto));
+    }
+
+    @PutMapping("/alterar-senha")
+    public ResponseEntity<String> alterarSenha(@RequestBody @Valid AlterarSenhaClienteDTO dados) {
+        try {
+            service.alteraSenha(dados.email(), dados.novaSenha());
+            return ResponseEntity.ok("Senha alterada com sucesso");
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
