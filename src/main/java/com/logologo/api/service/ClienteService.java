@@ -2,6 +2,7 @@ package com.logologo.api.service;
 
 import com.logologo.api.dto.*;
 import com.logologo.api.model.Carrinho;
+import com.logologo.api.model.Cartao;
 import com.logologo.api.model.Cliente;
 import com.logologo.api.repository.ClienteRepository;
 import com.logologo.api.utils.CartaoUtils;
@@ -24,9 +25,7 @@ public class ClienteService {
     }
 
     public ClienteResponseDTO buscarPorId(Long id) {
-        Cliente cliente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
-
+        Cliente cliente = repository.findById(id).orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
         return toResponseDTO(cliente);
     }
 
@@ -39,6 +38,9 @@ public class ClienteService {
         cliente.setNome(dto.nome());
         cliente.setEmail(dto.email());
         cliente.setSenha(dto.senha());
+
+        cliente.setTelefone(dto.telefone());
+        cliente.setImageUrl(dto.imageUrl());
 
         Carrinho carrinho = new Carrinho();
         carrinho.setCliente(cliente);
@@ -56,8 +58,7 @@ public class ClienteService {
     }
 
     public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO dto) {
-        Cliente cliente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        Cliente cliente = repository.findById(id).orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         if (!cliente.getEmail().equals(dto.email())) {
             throw new RuntimeException("Email não pode ser alterado");
@@ -65,6 +66,8 @@ public class ClienteService {
 
         cliente.setNome(dto.nome());
         cliente.setSenha(dto.senha());
+        cliente.setTelefone(dto.telefone());
+        cliente.setImageUrl(dto.imageUrl());
 
         repository.save(cliente);
         return toResponseDTO(cliente);
@@ -106,20 +109,18 @@ public class ClienteService {
     }
 
     private ClienteResponseDTO toResponseDTO(Cliente cliente) {
-
-        List<EnderecoDTO> enderecos = cliente.getEnderecos() == null ? List.of() :
-                cliente.getEnderecos().stream()
-                        .map(e -> new EnderecoDTO(
-                                e.getId(),
-                                e.getLogradouro(),
-                                e.getNumero(),
-                                e.getComplemento(),
-                                e.getBairro(),
-                                e.getCidade(),
-                                e.getEstado(),
-                                e.getCep(),
-                                e.getCliente().getId()
-                        )).toList();
+        List<EnderecoDTO> enderecos = cliente.getEnderecos() == null ? List.of() : cliente.getEnderecos().stream()
+                .map(e -> new EnderecoDTO(
+                        e.getId(),
+                        e.getLogradouro(),
+                        e.getNumero(),
+                        e.getComplemento(),
+                        e.getBairro(),
+                        e.getCidade(),
+                        e.getEstado(),
+                        e.getCep(),
+                        e.getCliente().getId()
+                )).toList();
 
         List<CartaoResponseDTO> cartoes = cliente.getCartoes() == null ? List.of() :
                 cliente.getCartoes().stream()
@@ -136,7 +137,6 @@ public class ClienteService {
         List<ComprarResponseDTO> compras = cliente.getCompras() == null ? List.of() :
                 cliente.getCompras().stream()
                         .map(comprar -> {
-
                             List<ItemCompraDTO> itensCompra = comprar.getProdutos().stream()
                                     .map(p -> new ItemCompraDTO(
                                             p.getId(),
@@ -163,6 +163,8 @@ public class ClienteService {
                 cliente.getId(),
                 cliente.getNome(),
                 cliente.getEmail(),
+                cliente.getTelefone(),
+                cliente.getImageUrl(),
                 enderecos,
                 cartoes,
                 compras,

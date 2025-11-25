@@ -29,8 +29,13 @@ public class Cliente {
     @Column(unique = true)
     private String email;
 
-    @NotBlank(message = "Senha é obrigaória")
+    @NotBlank(message = "Senha é obrigatória")
     private String senha;
+
+    private String telefone;
+
+    @Column(length = 1000)
+    private String imageUrl;
 
     @JsonManagedReference
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -39,7 +44,6 @@ public class Cliente {
     @JsonManagedReference
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Cartao> cartoes;
-
 
     @JsonManagedReference
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)

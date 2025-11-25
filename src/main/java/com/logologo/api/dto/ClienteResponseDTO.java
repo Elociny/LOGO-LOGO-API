@@ -18,6 +18,10 @@ public record ClienteResponseDTO(
         @Email(message = "Email deve ser válido")
         String email,
 
+        String telefone,
+
+        String imageUrl,
+
         List<EnderecoDTO> endercos,
 
         List<CartaoResponseDTO> cartoes,
