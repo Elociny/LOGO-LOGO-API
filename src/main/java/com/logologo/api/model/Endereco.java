@@ -38,6 +38,7 @@ public class Endereco {
     @NotBlank(message = "Estado é obrigatório")
     private String estado;
 
+    @NotBlank(message = "CEP é obrigatório")
     private String cep;
 
     @JsonBackReference
