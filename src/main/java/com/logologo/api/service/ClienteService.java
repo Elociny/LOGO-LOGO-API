@@ -2,13 +2,11 @@ package com.logologo.api.service;
 
 import com.logologo.api.dto.*;
 import com.logologo.api.model.Carrinho;
-import com.logologo.api.model.Cartao;
 import com.logologo.api.model.Cliente;
 import com.logologo.api.repository.ClienteRepository;
 import com.logologo.api.utils.CartaoUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 
@@ -26,7 +24,8 @@ public class ClienteService {
     }
 
     public ClienteResponseDTO buscarPorId(Long id) {
-        Cliente cliente = repository.findById(id).orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         return toResponseDTO(cliente);
     }
@@ -57,7 +56,8 @@ public class ClienteService {
     }
 
     public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO dto) {
-        Cliente cliente = repository.findById(id).orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         if (!cliente.getEmail().equals(dto.email())) {
             throw new RuntimeException("Email não pode ser alterado");
@@ -106,18 +106,20 @@ public class ClienteService {
     }
 
     private ClienteResponseDTO toResponseDTO(Cliente cliente) {
-        List<EnderecoDTO> enderecos = cliente.getEnderecos() == null ? List.of() : cliente.getEnderecos().stream()
-                .map(e -> new EnderecoDTO(
-                        e.getId(),
-                        e.getLogradouro(),
-                        e.getNumero(),
-                        e.getComplemento(),
-                        e.getBairro(),
-                        e.getCidade(),
-                        e.getEstado(),
-                        e.getCep(),
-                        e.getCliente().getId()
-                )).toList();
+
+        List<EnderecoDTO> enderecos = cliente.getEnderecos() == null ? List.of() :
+                cliente.getEnderecos().stream()
+                        .map(e -> new EnderecoDTO(
+                                e.getId(),
+                                e.getLogradouro(),
+                                e.getNumero(),
+                                e.getComplemento(),
+                                e.getBairro(),
+                                e.getCidade(),
+                                e.getEstado(),
+                                e.getCep(),
+                                e.getCliente().getId()
+                        )).toList();
 
         List<CartaoResponseDTO> cartoes = cliente.getCartoes() == null ? List.of() :
                 cliente.getCartoes().stream()
@@ -133,16 +135,29 @@ public class ClienteService {
 
         List<ComprarResponseDTO> compras = cliente.getCompras() == null ? List.of() :
                 cliente.getCompras().stream()
-                        .map(comprar -> new ComprarResponseDTO(
-                                comprar.getId(),
-                                cliente.getId(),
-                                comprar.getProdutos().stream().map(produto -> produto.getId()).toList(),
-                                comprar.getDataCompra(),
-                                comprar.getValorTotal(),
-                                comprar.getStatus(),
-                                comprar.getFormaPagamento(),
-                                comprar.getCartao() != null ? comprar.getCartao().getId() : null
-                        )).toList();
+                        .map(comprar -> {
+
+                            List<ItemCompraDTO> itensCompra = comprar.getProdutos().stream()
+                                    .map(p -> new ItemCompraDTO(
+                                            p.getId(),
+                                            p.getNome(),
+                                            p.getImageUrl(),
+                                            p.getCor(),
+                                            p.getTamanho(),
+                                            p.getPreco()
+                                    )).toList();
+
+                            return new ComprarResponseDTO(
+                                    comprar.getId(),
+                                    cliente.getId(),
+                                    itensCompra,
+                                    comprar.getDataCompra(),
+                                    comprar.getValorTotal(),
+                                    comprar.getStatus(),
+                                    comprar.getFormaPagamento(),
+                                    comprar.getCartao() != null ? comprar.getCartao().getId() : null
+                            );
+                        }).toList();
 
         return new ClienteResponseDTO(
                 cliente.getId(),

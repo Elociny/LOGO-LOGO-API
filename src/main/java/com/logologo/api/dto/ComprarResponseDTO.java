@@ -10,7 +10,7 @@ import java.util.List;
 public record ComprarResponseDTO(
         Long id,
         Long clienteId,
-        List<Long> produtoId,
+        List<ItemCompraDTO> itens,
         LocalDateTime dataCompra,
         BigDecimal valorTotal,
         StatusCompra status,

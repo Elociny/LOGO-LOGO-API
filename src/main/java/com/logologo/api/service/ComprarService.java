@@ -2,6 +2,7 @@ package com.logologo.api.service;
 
 import com.logologo.api.dto.ComprarRequestDTO;
 import com.logologo.api.dto.ComprarResponseDTO;
+import com.logologo.api.dto.ItemCompraDTO;
 import com.logologo.api.model.*;
 import com.logologo.api.repository.CartaoRepository;
 import com.logologo.api.repository.ClienteRepository;
@@ -83,12 +84,29 @@ public class ComprarService {
         comprarRepository.deleteById(id);
     }
 
+    // Adicione este método
+    public List<ComprarResponseDTO> listarPorCliente(Long clienteId) {
+        return comprarRepository.findByClienteId(clienteId)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
     private ComprarResponseDTO toDTO(Comprar comprar) {
+        List<ItemCompraDTO> itensDTO = comprar.getProdutos().stream()
+                .map(p -> new ItemCompraDTO(
+                        p.getId(),
+                        p.getNome(),
+                        p.getImageUrl(),
+                        p.getCor(),
+                        p.getTamanho(),
+                        p.getPrecoComDesconto()
+                )).toList();
 
         return new ComprarResponseDTO(
                 comprar.getId(),
                 comprar.getCliente().getId(),
-                comprar.getProdutos().stream().map(p -> p.getId()).toList(),
+                itensDTO,
                 comprar.getDataCompra(),
                 comprar.getValorTotal(),
                 comprar.getStatus(),

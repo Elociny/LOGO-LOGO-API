@@ -28,6 +28,11 @@ public class ComprarController {
         return ResponseEntity.ok(comprarService.buscarPorId(id));
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<ComprarResponseDTO>> listarPorCliente(@PathVariable Long clienteId) {
+        return ResponseEntity.ok(comprarService.listarPorCliente(clienteId));
+    }
+
     @PostMapping
     public ResponseEntity<ComprarResponseDTO> salvar(@RequestBody ComprarRequestDTO dto) {
         return ResponseEntity.ok(comprarService.salvar(dto));
