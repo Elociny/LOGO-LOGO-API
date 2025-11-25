@@ -42,4 +42,10 @@ public class CarrinhoController {
     public ResponseEntity<CarrinhoResponseDTO> remover (@PathVariable Long clienteId, @PathVariable Long itemId) {
         return ResponseEntity.ok(service.removerItem(clienteId, itemId));
     }
+
+    @DeleteMapping
+    public ResponseEntity<Void> limparCarrinho(@PathVariable Long clienteId) {
+        service.limparCarrinho(clienteId);
+        return ResponseEntity.noContent().build();
+    }
 }

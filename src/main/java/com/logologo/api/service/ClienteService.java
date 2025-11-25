@@ -91,6 +91,10 @@ public class ClienteService {
                                 item.getId(),
                                 item.getProduto().getId(),
                                 item.getProduto().getNome(),
+                                item.getProduto().getImageUrl(),
+                                item.getProduto().getPreco(),
+                                item.getProduto().getCor(),
+                                item.getProduto().getTamanho(),
                                 item.getQuantidade()
                         )).toList();
 

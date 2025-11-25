@@ -1,19 +1,14 @@
 package com.logologo.api.service;
 
-import com.logologo.api.dto.CarrinhoItemDTO;
-import com.logologo.api.dto.CarrinhoAdicionarItemDTO;
-import com.logologo.api.dto.CarrinhoResponseDTO;
-import com.logologo.api.model.Carrinho;
-import com.logologo.api.model.CarrinhoItem;
-import com.logologo.api.model.Cliente;
-import com.logologo.api.model.Produto;
-import com.logologo.api.repository.CarrinhoItemRepository;
-import com.logologo.api.repository.CarrinhoRepository;
-import com.logologo.api.repository.ClienteRepository;
-import com.logologo.api.repository.ProdutoRepository;
+import com.logologo.api.dto.*;
+import com.logologo.api.model.*;
+import com.logologo.api.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CarrinhoService {
@@ -24,108 +19,112 @@ public class CarrinhoService {
     private final ProdutoRepository produtoRepository;
 
     public CarrinhoService(CarrinhoRepository carrinhoRepository,
-                           CarrinhoItemRepository carrinhoItemRepository,
+                           CarrinhoItemRepository itemRepository,
                            ClienteRepository clienteRepository,
                            ProdutoRepository produtoRepository) {
         this.carrinhoRepository = carrinhoRepository;
-        this.itemRepository = carrinhoItemRepository;
+        this.itemRepository = itemRepository;
         this.clienteRepository = clienteRepository;
         this.produtoRepository = produtoRepository;
     }
 
+    private Carrinho getCarrinhoOuCria(Long clienteId) {
+        Carrinho carrinho = carrinhoRepository.findByClienteId(clienteId);
+
+        if (carrinho == null) {
+            Cliente cliente = clienteRepository.findById(clienteId)
+                    .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+
+            carrinho = new Carrinho();
+            carrinho.setCliente(cliente);
+            carrinho.setItens(new ArrayList<>());
+            carrinhoRepository.save(carrinho);
+        }
+        return carrinho;
+    }
+
     public CarrinhoResponseDTO listarCarrinho(Long clienteId) {
-        Carrinho carrinho = carrinhoRepository.findByClienteId(clienteId);
-
-        if (carrinho == null) {
-            throw new RuntimeException("Carrinho não encontrado");
-        }
-
-        List<CarrinhoItemDTO> itens = carrinho.getItens() == null ? List.of() : carrinho.getItens().stream()
-                .map(item -> new CarrinhoItemDTO(
-                        item.getId(),
-                        item.getProduto().getId(),
-                        item.getProduto().getNome(),
-                        item.getQuantidade()
-                )).toList();
-
-        return new CarrinhoResponseDTO(carrinho.getId(), clienteId, itens);
+        Carrinho carrinho = getCarrinhoOuCria(clienteId);
+        return toResponseDTO(carrinho);
     }
 
+    @Transactional
     public CarrinhoResponseDTO adicionarItem(Long clienteId, CarrinhoAdicionarItemDTO dto) {
-        Carrinho carrinho = carrinhoRepository.findByClienteId(clienteId);
+        Carrinho carrinho = getCarrinhoOuCria(clienteId);
 
-        if (carrinho == null) {
-            throw new RuntimeException("Carrinho não encontrado");
+        Produto produto = produtoRepository.findById(dto.produtoId())
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+        Optional<CarrinhoItem> itemExistente = carrinho.getItens().stream()
+                .filter(item -> item.getProduto().getId().equals(produto.getId()))
+                .findFirst();
+
+        if (itemExistente.isPresent()) {
+            CarrinhoItem item = itemExistente.get();
+            item.setQuantidade(item.getQuantidade() + dto.quantidade());
+            itemRepository.save(item);
+        } else {
+            CarrinhoItem novoItem = new CarrinhoItem();
+            novoItem.setCarrinho(carrinho);
+            novoItem.setProduto(produto);
+            novoItem.setQuantidade(dto.quantidade());
+
+            carrinho.getItens().add(novoItem);
+            itemRepository.save(novoItem);
         }
-
-        Produto produto = produtoRepository.findById(dto.produtoId()).orElseThrow(() -> new RuntimeException("Produto não encontrado"));
-
-        CarrinhoItem item = new CarrinhoItem();
-        item.setCarrinho(carrinho);
-        item.setProduto(produto);
-        item.setQuantidade(dto.quantidade());
-
-        carrinho.getItens().add(item);
-        itemRepository.save(item);
-
-        return listarCarrinho(clienteId);
-    }
-
-    public CarrinhoResponseDTO removerItem(Long clienteId, Long itemId) {
-        Carrinho carrinho = carrinhoRepository.findByClienteId(clienteId);
-
-        if (carrinho == null) {
-            throw new RuntimeException("Carrinho não encontrado");
-        }
-
-        CarrinhoItem item = itemRepository.findById(itemId).orElseThrow(() -> new RuntimeException("Item não encontrado"));
-
-        carrinho.getItens().remove(item);
-        itemRepository.delete(item);
-
-        return listarCarrinho(clienteId);
-    }
-
-
-    public CarrinhoResponseDTO atualizarQuantidade(Long clienteId, Long itemId, int quantidade) {
-        Carrinho carrinho = getCarrinho(clienteId);
-
-        CarrinhoItem carrinhoItem = carrinho.getItens().stream()
-                .filter(i -> i.getId().equals(itemId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Item não encontrado"));
-
-        carrinhoItem.setQuantidade(quantidade);
-        itemRepository.save(carrinhoItem);
 
         return toResponseDTO(carrinho);
     }
 
+    @Transactional
+    public CarrinhoResponseDTO removerItem(Long clienteId, Long itemId) {
+        Carrinho carrinho = getCarrinhoOuCria(clienteId);
 
-    private CarrinhoResponseDTO toResponseDTO(Carrinho carrinho) {
-        List<CarrinhoItemDTO> itens = carrinho.getItens().stream()
-                .map(i -> new CarrinhoItemDTO(
-                        i.getId(),
-                        i.getProduto().getId(),
-                        i.getProduto().getNome(),
-                        i.getQuantidade()
-                )).toList();
+        CarrinhoItem item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("Item não encontrado"));
 
-        return new CarrinhoResponseDTO(carrinho.getId(), carrinho.getCliente().getId(), itens);
+        carrinho.getItens().remove(item);
+        itemRepository.delete(item);
+
+        return toResponseDTO(carrinho);
     }
 
-    private Carrinho getCarrinho(Long clienteId) {
-        Cliente cliente = clienteRepository.findById(clienteId).orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+    @Transactional
+    public CarrinhoResponseDTO atualizarQuantidade(Long clienteId, Long itemId, int quantidade) {
+        Carrinho carrinho = getCarrinhoOuCria(clienteId);
 
-        Carrinho carrinho = cliente.getCarrinho();
-        if (carrinho == null) {
-            carrinho = new Carrinho();
-            carrinho.setCliente(cliente);
+        CarrinhoItem item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("Item não encontrado"));
+
+        item.setQuantidade(quantidade);
+        itemRepository.save(item);
+
+        return toResponseDTO(carrinho);
+    }
+
+    @Transactional
+    public void limparCarrinho(Long clienteId) {
+        Carrinho carrinho = carrinhoRepository.findByClienteId(clienteId);
+
+        if (carrinho != null) {
+            carrinho.getItens().clear();
             carrinhoRepository.save(carrinho);
-            cliente.setCarrinho(carrinho);
-            clienteRepository.save(cliente);
         }
+    }
 
-        return carrinho;
+    private CarrinhoResponseDTO toResponseDTO(Carrinho carrinho) {
+        List<CarrinhoItemDTO> itensDTO = carrinho.getItens().stream()
+                .map(item -> new CarrinhoItemDTO(
+                        item.getId(),
+                        item.getProduto().getId(),
+                        item.getProduto().getNome(),
+                        item.getProduto().getImageUrl(),
+                        item.getProduto().getPreco(),
+                        item.getProduto().getCor(),
+                        item.getProduto().getTamanho(),
+                        item.getQuantidade()
+                )).toList();
+
+        return new CarrinhoResponseDTO(carrinho.getId(), carrinho.getCliente().getId(), itensDTO);
     }
 }
