@@ -2,18 +2,17 @@ package com.logologo.api.service;
 
 import com.logologo.api.dto.ComprarRequestDTO;
 import com.logologo.api.dto.ComprarResponseDTO;
-import com.logologo.api.model.Cartao;
-import com.logologo.api.model.Comprar;
-import com.logologo.api.model.FormaPagamento;
-import com.logologo.api.model.StatusCompra;
+import com.logologo.api.model.*;
 import com.logologo.api.repository.CartaoRepository;
 import com.logologo.api.repository.ClienteRepository;
 import com.logologo.api.repository.ComprarRepository;
 import com.logologo.api.repository.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -30,18 +29,25 @@ public class ComprarService {
         return comprarRepository.findAll().stream().map(this::toDTO).toList();
     }
 
+    @Transactional
     public ComprarResponseDTO salvar(ComprarRequestDTO dto) {
         var cliente = clienteRepository.findById(dto.clienteId())
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-
-        var produtos = produtoRepository.findAllById(dto.produtosIds());
-        if (produtos.isEmpty()) {
+        var produtosUnicos = produtoRepository.findAllById(dto.produtosIds());
+        if (produtosUnicos.isEmpty()) {
             throw new RuntimeException("Nenhum produto encontrado");
         }
 
-        FormaPagamento formaPagamento = dto.formaPagamento();
+        List<Produto> produtosDaCompra = new ArrayList<>();
+        for (Long idSolicitado : dto.produtosIds()) {
+            produtosUnicos.stream()
+                    .filter(p -> p.getId().equals(idSolicitado))
+                    .findFirst()
+                    .ifPresent(produtosDaCompra::add);
+        }
 
+        FormaPagamento formaPagamento = dto.formaPagamento();
         Cartao cartao = null;
 
         if (formaPagamento == FormaPagamento.CARTAO) {
@@ -51,20 +57,11 @@ public class ComprarService {
 
             cartao = cartaoRepository.findById(dto.cartaoId())
                     .orElseThrow(() -> new RuntimeException("Cartão não encontrado"));
-
-            if (!cartao.getCliente().getId().equals(cliente.getId())) {
-                throw new RuntimeException("O cartão não pretence ao cliente informado");
-            }
-        } else {
-            if (dto.cartaoId() != null) {
-                throw new RuntimeException("Id do cartão só pode ser enviado quando a forma de pagamento é cartão");
-            }
         }
 
         Comprar compra = new Comprar();
-
         compra.setCliente(cliente);
-        compra.setProdutos(produtos);
+        compra.setProdutos(produtosDaCompra);
         compra.setDataCompra(LocalDateTime.now());
         compra.setStatus(StatusCompra.PENDENTE);
         compra.setFormaPagamento(formaPagamento);
