@@ -30,6 +30,11 @@ public class CartaoController {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<CartaoResponseDTO>> listarPorCliente(@PathVariable Long clienteId) {
+        return ResponseEntity.ok(service.listarPorCliente(clienteId));
+    }
+
     @PostMapping
     public ResponseEntity<CartaoResponseDTO> cadastrar(@RequestBody @Valid CartaoRequestDTO dto) {
         return ResponseEntity.ok(service.cadastrar(dto));

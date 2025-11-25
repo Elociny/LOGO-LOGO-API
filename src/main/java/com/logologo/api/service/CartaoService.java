@@ -10,6 +10,7 @@ import com.logologo.api.utils.CartaoUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CartaoService {
@@ -36,16 +37,33 @@ public class CartaoService {
         Cliente cliente = clienteRepository.findById(dto.clienteId())
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-        Cartao cartao = new Cartao();
-        cartao.setNumero(dto.numero());
-        cartao.setNomeTitular(dto.nomeTitular());
-        cartao.setValidade(dto.validade());
-        cartao.setCvv(dto.cvv());
-        cartao.setTipo(dto.tipo());
-        cartao.setBandeira(dto.bandeira());
-        cartao.setCliente(cliente);
+        Optional<Cartao> cartaoExistente = cartaoRepository.findByNumeroAndClienteId(dto.numero(), dto.clienteId());
+
+        Cartao cartao;
+
+        if (cartaoExistente.isPresent()) {
+            cartao = cartaoExistente.get();
+
+            cartao.setNomeTitular(dto.nomeTitular());
+            cartao.setValidade(dto.validade());
+            cartao.setCvv(dto.cvv());
+            cartao.setTipo(dto.tipo());
+            cartao.setBandeira(dto.bandeira());
+
+        } else {
+            cartao = new Cartao();
+            cartao.setCliente(cliente);
+            cartao.setNumero(dto.numero());
+
+            cartao.setNomeTitular(dto.nomeTitular());
+            cartao.setValidade(dto.validade());
+            cartao.setCvv(dto.cvv());
+            cartao.setTipo(dto.tipo());
+            cartao.setBandeira(dto.bandeira());
+        }
 
         cartaoRepository.save(cartao);
+
         return toResponseDTO(cartao);
     }
 
@@ -74,6 +92,13 @@ public class CartaoService {
         }
 
         cartaoRepository.deleteById(id);
+    }
+
+    public List<CartaoResponseDTO> listarPorCliente(Long clienteId) {
+        return cartaoRepository.findByClienteId(clienteId)
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 
     private CartaoResponseDTO toResponseDTO(Cartao cartao) {
