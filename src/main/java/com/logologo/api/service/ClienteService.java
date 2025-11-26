@@ -8,6 +8,8 @@ import com.logologo.api.repository.ClienteRepository;
 import com.logologo.api.utils.CartaoUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
 
@@ -15,9 +17,11 @@ import java.util.List;
 public class ClienteService {
 
     private final ClienteRepository repository;
+    private final FileStorageService fileStorageService;
 
-    public ClienteService(ClienteRepository repository) {
+    public ClienteService(ClienteRepository repository, FileStorageService fileStorageService) {
         this.repository = repository;
+        this.fileStorageService = fileStorageService;
     }
 
     public List<ClienteResponseDTO> listarTodos() {
@@ -57,17 +61,28 @@ public class ClienteService {
         return toResponseDTO(cliente);
     }
 
-    public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO dto) {
-        Cliente cliente = repository.findById(id).orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+    public ClienteResponseDTO atualizar(Long id, ClienteUpdateDTO dto, MultipartFile imagem) {
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-        if (!cliente.getEmail().equals(dto.email())) {
-            throw new RuntimeException("Email não pode ser alterado");
+        if (!cliente.getEmail().equals(dto.email()) && repository.existsByEmail(dto.email())) {
+            throw new RuntimeException("Email já está em uso por outro usuário");
         }
 
         cliente.setNome(dto.nome());
-        cliente.setSenha(dto.senha());
+        cliente.setEmail(dto.email());
         cliente.setTelefone(dto.telefone());
-        cliente.setImageUrl(dto.imageUrl());
+
+        if (imagem != null && !imagem.isEmpty()) {
+            String fileName = fileStorageService.storeFile(imagem);
+
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/uploads/")
+                    .path(fileName)
+                    .toUriString();
+
+            cliente.setImageUrl(fileDownloadUri);
+        }
 
         repository.save(cliente);
         return toResponseDTO(cliente);

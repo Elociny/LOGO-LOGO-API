@@ -1,13 +1,11 @@
 package com.logologo.api.controller;
 
-import com.logologo.api.dto.AlterarSenhaClienteDTO;
-import com.logologo.api.dto.ClienteRequestDTO;
-import com.logologo.api.dto.ClienteResponseDTO;
-import com.logologo.api.dto.LoginDTO;
+import com.logologo.api.dto.*;
 import com.logologo.api.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -44,9 +42,17 @@ public class ClienteController {
         return ResponseEntity.ok(cliente);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ClienteRequestDTO dto) {
-        return ResponseEntity.ok(service.atualizar(id, dto));
+    @PutMapping(value = "/{id}", consumes = { "multipart/form-data" })
+    public ResponseEntity<ClienteResponseDTO> atualizar(
+            @PathVariable Long id,
+            @RequestParam("nome") String nome,
+            @RequestParam("email") String email,
+            @RequestParam("telefone") String telefone,
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem
+    ) {
+        ClienteUpdateDTO dto = new ClienteUpdateDTO(nome, email, telefone, null);
+
+        return ResponseEntity.ok(service.atualizar(id, dto, imagem));
     }
 
     @PutMapping("/alterar-senha")
