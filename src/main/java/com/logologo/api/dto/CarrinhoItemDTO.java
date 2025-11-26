@@ -10,6 +10,7 @@ public record CarrinhoItemDTO(
         BigDecimal preco,
         String cor,
         String tamanho,
-        Integer quantidade
+        Integer quantidade,
+        Integer estoqueTotal
 ) {
 }

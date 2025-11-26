@@ -61,13 +61,24 @@ public class CarrinhoService {
 
         if (itemExistente.isPresent()) {
             CarrinhoItem item = itemExistente.get();
-            item.setQuantidade(item.getQuantidade() + dto.quantidade());
+            int novaQuantidade = item.getQuantidade() + dto.quantidade();
+
+            if (novaQuantidade > produto.getQuantidade()) {
+                throw new RuntimeException("Estoque insuficiente. Disponível: " + produto.getQuantidade());
+            }
+
+            item.setQuantidade(novaQuantidade);
             itemRepository.save(item);
         } else {
+            if (dto.quantidade() > produto.getQuantidade()) {
+                throw new RuntimeException("Estoque insuficiente. Disponível: " + produto.getQuantidade());
+            }
+
             CarrinhoItem novoItem = new CarrinhoItem();
             novoItem.setCarrinho(carrinho);
             novoItem.setProduto(produto);
             novoItem.setQuantidade(dto.quantidade());
+            novoItem.setPrecoNoMomento(produto.getPreco().doubleValue());
 
             carrinho.getItens().add(novoItem);
             itemRepository.save(novoItem);
@@ -96,6 +107,10 @@ public class CarrinhoService {
         CarrinhoItem item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Item não encontrado"));
 
+        if (quantidade > item.getProduto().getQuantidade()) {
+            throw new RuntimeException("Estoque insuficiente. Máximo disponível: " + item.getProduto().getQuantidade());
+        }
+
         item.setQuantidade(quantidade);
         itemRepository.save(item);
 
@@ -122,7 +137,8 @@ public class CarrinhoService {
                         item.getProduto().getPreco(),
                         item.getProduto().getCor(),
                         item.getProduto().getTamanho(),
-                        item.getQuantidade()
+                        item.getQuantidade(),
+                        item.getProduto().getQuantidade()
                 )).toList();
 
         return new CarrinhoResponseDTO(carrinho.getId(), carrinho.getCliente().getId(), itensDTO);

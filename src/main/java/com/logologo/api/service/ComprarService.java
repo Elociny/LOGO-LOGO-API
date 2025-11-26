@@ -15,7 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,22 +32,41 @@ public class ComprarService {
         return comprarRepository.findAll().stream().map(this::toDTO).toList();
     }
 
+    public List<ComprarResponseDTO> listarPorCliente(Long clienteId) {
+        return comprarRepository.findByClienteId(clienteId)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
     @Transactional
     public ComprarResponseDTO salvar(ComprarRequestDTO dto) {
         var cliente = clienteRepository.findById(dto.clienteId())
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-        var produtosUnicos = produtoRepository.findAllById(dto.produtosIds());
-        if (produtosUnicos.isEmpty()) {
-            throw new RuntimeException("Nenhum produto encontrado");
-        }
+        Map<Long, Long> contagemPorProduto = dto.produtosIds().stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
         List<Produto> produtosDaCompra = new ArrayList<>();
-        for (Long idSolicitado : dto.produtosIds()) {
-            produtosUnicos.stream()
-                    .filter(p -> p.getId().equals(idSolicitado))
-                    .findFirst()
-                    .ifPresent(produtosDaCompra::add);
+
+        for (Map.Entry<Long, Long> entry : contagemPorProduto.entrySet()) {
+            Long idProduto = entry.getKey();
+            int qtdSolicitada = entry.getValue().intValue();
+
+            Produto produto = produtoRepository.findById(idProduto)
+                    .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + idProduto));
+
+            if (produto.getQuantidade() < qtdSolicitada) {
+                throw new RuntimeException("Estoque insuficiente para o produto: " + produto.getNome() +
+                        ". Restam apenas " + produto.getQuantidade() + " unidades.");
+            }
+
+            produto.setQuantidade(produto.getQuantidade() - qtdSolicitada);
+            produtoRepository.save(produto);
+
+            for (int i = 0; i < qtdSolicitada; i++) {
+                produtosDaCompra.add(produto);
+            }
         }
 
         FormaPagamento formaPagamento = dto.formaPagamento();
@@ -84,14 +105,6 @@ public class ComprarService {
         comprarRepository.deleteById(id);
     }
 
-    // Adicione este método
-    public List<ComprarResponseDTO> listarPorCliente(Long clienteId) {
-        return comprarRepository.findByClienteId(clienteId)
-                .stream()
-                .map(this::toDTO)
-                .toList();
-    }
-
     private ComprarResponseDTO toDTO(Comprar comprar) {
         List<ItemCompraDTO> itensDTO = comprar.getProdutos().stream()
                 .map(p -> new ItemCompraDTO(
@@ -114,5 +127,4 @@ public class ComprarService {
                 comprar.getCartao() != null ? comprar.getCartao().getId() : null
         );
     }
-
 }

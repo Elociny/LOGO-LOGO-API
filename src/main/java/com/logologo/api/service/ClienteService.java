@@ -113,7 +113,8 @@ public class ClienteService {
                                 item.getProduto().getPreco(),
                                 item.getProduto().getCor(),
                                 item.getProduto().getTamanho(),
-                                item.getQuantidade()
+                                item.getQuantidade(),
+                                item.getProduto().getQuantidade()
                         )).toList();
 
         return new CarrinhoResponseDTO(
