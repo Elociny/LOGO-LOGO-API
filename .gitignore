@@ -34,3 +34,4 @@ build/
 
 ### Uploads ###
 uploads/*
+!uploads/user.png
