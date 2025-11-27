@@ -105,7 +105,7 @@ public class DataLoader {
                 produtoRepository.save(Produto.builder()
                         .nome("Moletom Canguru Cinza")
                         .descricao("Blusa de moletom com capuz e bolso canguru.")
-                        .preco(BigDecimal.valueOf(139.90)).desconto(0).quantidade(40).cor("gray").tamanho("GG").categoria(Categoria.MASCULINO)
+                        .preco(BigDecimal.valueOf(139.90)).desconto(0).quantidade(40).cor("gray").tamanho("GG").categoria(Categoria.FEMININO)
                         .imageUrl("https://www.lojamirante.com.br/uploads/produtos/moletom-canguru-com-capuz-feminino-cinza-mescla-649ee1093e608.jpg").build());
 
                 produtoRepository.save(Produto.builder()
