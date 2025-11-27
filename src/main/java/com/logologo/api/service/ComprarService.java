@@ -85,7 +85,7 @@ public class ComprarService {
         compra.setCliente(cliente);
         compra.setProdutos(produtosDaCompra);
         compra.setDataCompra(LocalDateTime.now());
-        compra.setStatus(StatusCompra.PENDENTE);
+        compra.setStatus(StatusCompra.ENTREGUE);
         compra.setFormaPagamento(formaPagamento);
         compra.setCartao(cartao);
         compra.calcularValorTotal();
